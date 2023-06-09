@@ -4,6 +4,7 @@ import requests
 import re
 import random
 import threading
+import asyncio
 
 class Debounce:
   def __init__(self, interval):
@@ -31,6 +32,8 @@ def keyword(message, uid, gid = None, msgId = None):
   if '咕咕咕' in message:
   # if message[0:3] == '咕咕咕':
     gugugu(uid, gid, msgId)
+  if '天气' in message:
+    weather(uid, gid, msgId)
   if '合并' in message:
     hebingmsg(uid, gid)
 
@@ -64,7 +67,20 @@ def halasuo(uid, gid, msgId):
 @Debounce(5)
 def gugugu(uid, gid, msgId):
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'[CQ:reply,' r'id=' + str(msgId) + r']' + '懂得都懂'))
-  
+
+@Debounce(3)
+def weather(uid, gid, msgId):
+  shanghai = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101020100&key=eff26461c820481e869c09ec6f894948')
+  shanghaires = shanghai.json()['daily'][0]
+  szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220701&key=eff26461c820481e869c09ec6f894948')
+  szhoures = szhou.json()['daily'][0]
+  print(szhou.json()['daily'][0])
+  suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190401&key=eff26461c820481e869c09ec6f894948')
+  suzhoures = suzhou.json()['daily'][0]
+  # 接口支持 和风天气 https://dev.qweather.com/
+  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '上海：' + shanghaires['textDay'] + '  温度 ' + shanghaires['tempMin'] + '°C - '+ shanghaires['tempMax'] + '°C%0a宿州：' + szhoures['textDay'] + '  温度 ' + szhoures['tempMin'] + '°C - '+ szhoures['tempMax'] + '°C%0a苏州：' + suzhoures['textDay'] + '  温度 ' + suzhoures['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C'))
+
+
 @Debounce(5)
 # 合并转发消息
 def hebingmsg(uid, gid):
