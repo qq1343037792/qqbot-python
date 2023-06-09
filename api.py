@@ -46,6 +46,7 @@ def zhanji(uid, gid, name):
     else:
       # 如果是私聊信息
    		requests.get(url='http://127.0.0.1:5700/send_private_msg?user_id={0}&message={1}团分{2}'.format(uid, name, tuanfen))
+
 @Debounce(5)
 def setu(gid): 
   key = ''
@@ -54,14 +55,17 @@ def setu(gid):
   setu_url = menu.json()['data'][0]['url'] # 对传回来的涩图网址进行数据提取
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'[CQ:image,' r'file=' + str(setu_url) + r']'))
 
+@Debounce(5)
 # 回复特定消息
 def halasuo(uid, gid, msgId):
   print('执行halasuo')
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'[CQ:reply,' r'id=' + str(msgId) + r']' + '哈几把哈'))
 
+@Debounce(5)
 def gugugu(uid, gid, msgId):
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'[CQ:reply,' r'id=' + str(msgId) + r']' + '懂得都懂'))
-
+  
+@Debounce(5)
 # 合并转发消息
 def hebingmsg(uid, gid):
   print('执行合并')
