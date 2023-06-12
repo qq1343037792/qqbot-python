@@ -4,7 +4,7 @@ import requests
 import re
 import random
 import threading
-
+import config
 class Debounce:
   def __init__(self, interval):
       self.interval = interval
@@ -22,10 +22,14 @@ class Debounce:
 #'如果是关键词则触发对应功能，群号默认为空'
 def keyword(message, uid, gid = None, msgId = None):
   print(message)
-  if '[CQ:at,qq=2900824356]' in message:
+  if '[CQ:at,qq=2900824356]' in message and config.ADMIN_QQ != uid:
     return atme(gid, msgId)
   # if message[0:3] == '300': # 300查团分, 格式为300+游戏名称，如 “300yaq”
   #   return zhanji(uid, gid, message[3:len(message)])
+  if '[CQ:at,qq=2900824356]' in message and config.ADMIN_QQ == uid and '给我打' in message:
+    return fight(uid, gid, msgId)
+  if message[0:2] == '热搜':
+    return baiduresou(gid)
   if '战绩查询' in message:
     return lolzhanji(gid, msgId)
   if '提神' in message: # 你们懂的
@@ -58,6 +62,11 @@ def atme(gid, msgId):
   # requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '@我干叼'))
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '[CQ:reply,id=' + str(msgId) + ']' + '@我干叼' + '[CQ:image,file=emoji1.png]'))
   # requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '[CQ:image,file=emoji1.png]'))
+
+@Debounce(3)
+def fight(uid, gid, msgId):
+  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '[CQ:image,file=emoji2.png]'))
+  return 
 
 @Debounce(5)
 # lol战绩查询
@@ -103,6 +112,7 @@ def winCount(rankData):
         wins = wins + 1
   return (wins * 100) // 20 
 
+# 提神图
 @Debounce(5)
 def setu(gid): 
   key = ''
@@ -121,18 +131,40 @@ def halasuo(uid, gid, msgId):
 def gugugu(uid, gid, msgId):
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'[CQ:reply,' r'id=' + str(msgId) + r']' + '懂得都懂'))
 
+# 天气查询
 @Debounce(3)
 def weather(uid, gid, msgId):
-  shanghai = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101020100&key=eff26461c820481e869c09ec6f894948')
+  shanghai = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101020100&key=' + config.WEATHER_KEY)
   shanghaires = shanghai.json()['daily'][0]
-  szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220701&key=eff26461c820481e869c09ec6f894948')
+  szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220701&key=' + config.WEATHER_KEY)
   szhoures = szhou.json()['daily'][0]
   print(szhou.json()['daily'][0])
-  suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190401&key=eff26461c820481e869c09ec6f894948')
+  suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190401&key=' + config.WEATHER_KEY)
   suzhoures = suzhou.json()['daily'][0]
   # 接口支持 和风天气 https://dev.qweather.com/
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '上海：' + shanghaires['textDay'] + '  温度 ' + shanghaires['tempMin'] + '°C - '+ shanghaires['tempMax'] + '°C%0a宿州：' + szhoures['textDay'] + '  温度 ' + szhoures['tempMin'] + '°C - '+ szhoures['tempMax'] + '°C%0a苏州：' + suzhoures['textDay'] + '  温度 ' + suzhoures['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C'))
 
+#百度热搜
+@Debounce(5)
+def baiduresou(gid):
+  url = 'https://top.baidu.com/board?tab=realtime'
+  res = requests.get(url)
+  r = res.text
+  data = re.search('(<!--s-data:)({.+})(-->)', r)
+  # r = json.loads(data.groups()[1])["data"]["cards"][0]["content"][:cnt]
+  r = json.loads(data.groups()[1])["data"]["cards"][0]["content"]
+  # print(r)
+  msg_list = ['百度热搜榜']
+  for i,obj in enumerate(r):
+    # result = '%d、%2ahot:%2a链接:%s'%(i+1,obj["desc"],obj["hotScore"],'')
+    result = '%d、%s\nhot:%s\n链接:%s'%(i+1,obj["desc"],obj["hotScore"],obj["appUrl"])
+    msg_list.append(result)
+
+  print(msg_list)
+  try:
+    requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, msg_list))
+  except:
+    requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '寄了啊'))
 
 @Debounce(5)
 # 合并转发消息
