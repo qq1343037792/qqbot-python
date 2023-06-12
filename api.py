@@ -39,7 +39,7 @@ def keyword(message, uid, gid = None, msgId = None):
     return weather(uid, gid, msgId)
   if '合并' in message:
     return hebingmsg(uid, gid)
-# lol战绩查询
+# 300战绩查询
 def zhanji(uid, gid, name):
     url = 'https://300report.jumpw.com/api/getrole?name=' + name
     menu = requests.get(url)
@@ -89,7 +89,7 @@ def lolzhanji(gid, msgId):
 
   sadRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ sadId +'?&limit=20&hl=zh_CN&game_type=total', headers={'User-Agent': random.choice(my_headers)})
   sadInfo = winCount(sadRes.json()['data'])
-  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '近20场胜率%0aELEGANTZ：' + str(eleInfo) +'% ' + '%0a觉得离谱：' + str(nbnInfo) + +'% ' + '%0asadlessman：' + str(sadInfo) + '%'))
+  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'近20场胜率 ELEGANTZ：' + str(eleInfo) + r'%, 觉得离谱：' + str(nbnInfo) + r'%, sadlessman：' + str(sadInfo) + '%'))
 
 # 胜率计算
 def winCount(rankData):
