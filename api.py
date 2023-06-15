@@ -138,11 +138,12 @@ def weather(uid, gid, msgId):
   shanghaires = shanghai.json()['daily'][0]
   szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220701&key=' + config.WEATHER_KEY)
   szhoures = szhou.json()['daily'][0]
-  print(szhou.json()['daily'][0])
   suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190401&key=' + config.WEATHER_KEY)
   suzhoures = suzhou.json()['daily'][0]
+  hefei = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220101&key=' + config.WEATHER_KEY)
+  hefeires = hefei.json()['daily'][0]
   # 接口支持 和风天气 https://dev.qweather.com/
-  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '上海：' + shanghaires['textDay'] + '  温度 ' + shanghaires['tempMin'] + '°C - '+ shanghaires['tempMax'] + '°C%0a宿州：' + szhoures['textDay'] + '  温度 ' + szhoures['tempMin'] + '°C - '+ szhoures['tempMax'] + '°C%0a苏州：' + suzhoures['textDay'] + '  温度 ' + suzhoures['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C'))
+  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '上海：' + shanghaires['textDay'] + '  温度 ' + shanghaires['tempMin'] + '°C - '+ shanghaires['tempMax'] + '°C%0a宿州：' + szhoures['textDay'] + '  温度 ' + szhoures['tempMin'] + '°C - '+ szhoures['tempMax'] + '°C%0a苏州：' + suzhoures['textDay'] + '  温度 ' + suzhoures['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C%0a合肥：' + hefeires['textDay'] + '  温度 ' + hefeires['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C'))
 
 #百度热搜
 @Debounce(5)
