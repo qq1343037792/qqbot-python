@@ -22,24 +22,24 @@ class Debounce:
 #'如果是关键词则触发对应功能，群号默认为空'
 def keyword(message, uid, gid = None, msgId = None):
   print(message)
-  if '[CQ:at,qq=2900824356]' in message and config.ADMIN_QQ != uid:
+  if '[CQ:at,qq='+ str(config.BOT_QQ) +']' in message and config.ADMIN_QQ != uid:
     return atme(gid, msgId)
   # if message[0:3] == '300': # 300查团分, 格式为300+游戏名称，如 “300yaq”
   #   return zhanji(uid, gid, message[3:len(message)])
-  if '[CQ:at,qq=2900824356]' in message and config.ADMIN_QQ == uid and '给我打' in message:
-    return fight(uid, gid, msgId)
+  # if '[CQ:at,qq='+ config.BOT_QQ +']' in message and config.ADMIN_QQ == uid and '给我打' in message:
+  #   return fight(uid, gid, msgId)
   if message[0:2] == '热搜':
     return baiduresou(gid)
   if '战绩查询' in message:
     return lolzhanji(gid, msgId)
-  if '提神' in message: # 你们懂的
+  if message[0:2] == '提神':
     return setu(gid)
   if '哈喇搜' in message:
     return halasuo(uid, gid, msgId)
   if '咕咕咕' in message:
   # if message[0:3] == '咕咕咕':
     return gugugu(uid, gid, msgId)
-  if '天气' in message:
+  if message[0:2] == '天气':
     return weather(uid, gid, msgId)
   if '合并' in message:
     return hebingmsg(uid, gid)
@@ -90,13 +90,13 @@ def lolzhanji(gid, msgId):
     "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko) Ubuntu/11.04 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7",
     "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0 "
   ]
-  eleRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ eleId +'?&limit=20&hl=zh_CN&game_type=total', headers={'User-Agent': random.choice(my_headers)})
+  eleRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ eleId +'?&limit=20&hl=zh_CN&game_type=aram', headers={'User-Agent': random.choice(my_headers)})
   eleInfo = winCount(eleRes.json()['data'])
 
-  nbnRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ nubnaId +'?&limit=20&hl=zh_CN&game_type=total', headers={'User-Agent': random.choice(my_headers)})
+  nbnRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ nubnaId +'?&limit=20&hl=zh_CN&game_type=aram', headers={'User-Agent': random.choice(my_headers)})
   nbnInfo = winCount(nbnRes.json()['data'])
 
-  sadRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ sadId +'?&limit=20&hl=zh_CN&game_type=total', headers={'User-Agent': random.choice(my_headers)})
+  sadRes = requests.get('https://op.gg/api/v1.0/internal/bypass/games/tw/summoners/'+ sadId +'?&limit=20&hl=zh_CN&game_type=aram', headers={'User-Agent': random.choice(my_headers)})
   sadInfo = winCount(sadRes.json()['data'])
   requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, r'近20场胜率 ELEGANTZ：' + str(eleInfo) + r'%, 觉得离谱：' + str(nbnInfo) + r'%, sadlessman：' + str(sadInfo) + '%'))
 
@@ -134,11 +134,13 @@ def gugugu(uid, gid, msgId):
 # 天气查询
 @Debounce(3)
 def weather(uid, gid, msgId):
-  shanghai = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101020100&key=' + config.WEATHER_KEY)
+  shanghai = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101021500&key=' + config.WEATHER_KEY)
+  shanghaiNow = requests.get('https://devapi.qweather.com/v7/weather/now?location=101021500&key=' + config.WEATHER_KEY)
   shanghaires = shanghai.json()['daily'][0]
-  szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220701&key=' + config.WEATHER_KEY)
+  print(shanghaiNow.json())
+  szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220706&key=' + config.WEATHER_KEY)
   szhoures = szhou.json()['daily'][0]
-  suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190401&key=' + config.WEATHER_KEY)
+  suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190405&key=' + config.WEATHER_KEY)
   suzhoures = suzhou.json()['daily'][0]
   hefei = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220101&key=' + config.WEATHER_KEY)
   hefeires = hefei.json()['daily'][0]
