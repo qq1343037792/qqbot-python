@@ -5,6 +5,9 @@ import re
 import random
 import threading
 import config
+# import schedule
+# import time
+
 class Debounce:
   def __init__(self, interval):
       self.interval = interval
@@ -22,6 +25,8 @@ class Debounce:
 #'如果是关键词则触发对应功能，群号默认为空'
 def keyword(message, uid, gid = None, msgId = None):
   print(message)
+  print(gid)
+
   if '[CQ:at,qq='+ str(config.BOT_QQ) +']' in message and config.ADMIN_QQ != uid:
     return atme(gid, msgId)
   # if message[0:3] == '300': # 300查团分, 格式为300+游戏名称，如 “300yaq”
@@ -134,18 +139,58 @@ def gugugu(uid, gid, msgId):
 # 天气查询
 @Debounce(3)
 def weather(uid, gid, msgId):
+  # 上海
   shanghai = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101021500&key=' + config.WEATHER_KEY)
   shanghaiNow = requests.get('https://devapi.qweather.com/v7/weather/now?location=101021500&key=' + config.WEATHER_KEY)
   shanghaires = shanghai.json()['daily'][0]
-  print(shanghaiNow.json())
-  szhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220706&key=' + config.WEATHER_KEY)
-  szhoures = szhou.json()['daily'][0]
+  shanghaiNowRes = shanghaiNow.json()
+  # 埇桥
+  yongqiao = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220706&key=' + config.WEATHER_KEY)
+  yongqiaoNow = requests.get('https://devapi.qweather.com/v7/weather/now?location=101220706&key=' + config.WEATHER_KEY)
+  yongqiaores = yongqiao.json()['daily'][0]
+  yongqiaoNowRes = yongqiaoNow.json()
+  # 泗县
+  sixian = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220704&key=' + config.WEATHER_KEY)
+  sixianNow = requests.get('https://devapi.qweather.com/v7/weather/now?location=101220704&key=' + config.WEATHER_KEY)
+  sixianres = sixian.json()['daily'][0]
+  sixianNowRes = sixianNow.json()
+  # 苏州
   suzhou = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101190405&key=' + config.WEATHER_KEY)
+  suzhouNow = requests.get('https://devapi.qweather.com/v7/weather/now?location=101190405&key=' + config.WEATHER_KEY)
   suzhoures = suzhou.json()['daily'][0]
+  suzhouNowRes = suzhouNow.json()
+  # 合肥
   hefei = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101220101&key=' + config.WEATHER_KEY)
+  hefeiNow = requests.get('https://devapi.qweather.com/v7/weather/now?location=101220101&key=' + config.WEATHER_KEY)
   hefeires = hefei.json()['daily'][0]
+  hefeiNowRes = hefeiNow.json()
+
+  tempList = [int(shanghaiNowRes['now']['temp']), int(yongqiaoNowRes['now']['temp']), int(sixianNowRes['now']['temp']), int(suzhouNowRes['now']['temp']), int(hefeiNowRes['now']['temp'])]
+  face0 = getFace(0,tempList)
+  face1 = getFace(1,tempList)
+  face2 = getFace(2,tempList)
+  face3 = getFace(3,tempList)
+  face4 = getFace(4,tempList)
+
   # 接口支持 和风天气 https://dev.qweather.com/
-  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '上海：' + shanghaires['textDay'] + '  温度 ' + shanghaires['tempMin'] + '°C - '+ shanghaires['tempMax'] + '°C%0a宿州：' + szhoures['textDay'] + '  温度 ' + szhoures['tempMin'] + '°C - '+ szhoures['tempMax'] + '°C%0a苏州：' + suzhoures['textDay'] + '  温度 ' + suzhoures['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C%0a合肥：' + hefeires['textDay'] + '  温度 ' + hefeires['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C'))
+  line = '%0a--------------------------'
+  requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, ('普陀：' + '当前 ' + shanghaiNowRes['now']['text'] + '   ' + shanghaiNowRes['now']['temp'] + '°C' + face0 + '%0a          今日 ' + shanghaires['tempMin'] + '°C - '+ shanghaires['tempMax'] + '°C' +
+                                                                                          line +
+                                                                                          '%0a埇桥：' + '当前 ' + yongqiaoNowRes['now']['text'] + '   ' + yongqiaoNowRes['now']['temp'] + '°C' + face1 + '%0a          今日 ' + yongqiaores['tempMin'] + '°C - '+ yongqiaores['tempMax'] + '°C' +
+                                                                                          line +
+                                                                                          '%0a泗县：' + '当前 ' + sixianNowRes['now']['text'] + '   ' + sixianNowRes['now']['temp'] + '°C' + face2 + '%0a          今日 ' + sixianres['tempMin'] + '°C - '+ sixianres['tempMax'] + '°C' +
+                                                                                          line +
+                                                                                          '%0a吴中：' + '当前 ' + suzhouNowRes['now']['text']+ '   ' + suzhouNowRes['now']['temp'] + '°C' + face3 + '%0a          今日 ' + suzhoures['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C' +
+                                                                                          line +
+                                                                                          '%0a合肥：' + '当前 ' + hefeiNowRes['now']['text']+  '   ' + hefeiNowRes['now']['temp'] + '°C' + face4 + '%0a          今日 ' + hefeires['tempMin'] + '°C - '+ suzhoures['tempMax'] + '°C')))
+  
+def getFace(i, list):
+  if(list[i] == max(list)):
+    return '[CQ:face,id=11]'
+  if(list[i] < max(list) and list[i] > min(list)):
+    return '[CQ:face,id=10]'
+  if(list[i] == min(list)):
+    return '[CQ:face,id=4]'
 
 #百度热搜
 @Debounce(5)
@@ -192,3 +237,18 @@ def hebingmsg(uid, gid):
   }
   res = requests.post('http://127.0.0.1:5700/send_group_forward_msg', data=postData)
   print(res.json())
+
+# 早上报时
+# def morning():
+#   # requests.get(url='http://127.0.0.1:5700/send_group_msg?group_id={0}&message={1}'.format(gid, '[CQ:image,file=emoji2.png]'))
+#   print('报时')
+#   return
+
+# schedule.every().monday.at("15:43").do(morning)
+# schedule.every().tuesday.at("09:00").do(morning)
+# schedule.every().wednesday.at("09:00").do(morning)
+# schedule.every().thursday.at("09:00").do(morning)
+# schedule.every().friday.at("09:00").do(morning)
+
+# while True:
+#   schedule.run_pending() # 运行所有可运行的任务
